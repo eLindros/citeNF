@@ -14,8 +14,8 @@ import json
 class JsonWriterPipeline:
 
     def open_spider(self, spider):
-        self.file_video = open('videos.jl', 'w', encoding='utf-8')
-        self.file_citation = open('citation.jl', 'w', encoding='utf-8')
+        self.file_video = open('videos.jsonl', 'w', encoding='utf-8')
+        self.file_citation = open('citation.jsonl', 'w', encoding='utf-8')
 
     def close_spider(self, spider):
         self.file_video.close()

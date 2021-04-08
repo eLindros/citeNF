@@ -7,7 +7,7 @@
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
-from citeNF.items import videoItem, citeItem
+from citeNF.items import VideoItem, CiteItem
 import json
 
 
@@ -22,9 +22,9 @@ class JsonWriterPipeline:
         self.file_citation.close()
 
     def process_item(self, item, spider):
-        if isinstance(item, videoItem):
+        if isinstance(item, VideoItem):
             return self.handleVideo(item, spider)
-        if isinstance(item, citeItem):
+        if isinstance(item, CiteItem):
             return self.handleCitation(item, spider)
 
     def handleVideo(self, item, spider):
@@ -60,17 +60,17 @@ class TxtWriterPipeline:
         self.file_citation.close()
 
     def process_item(self, item, spider):
-        if isinstance(item, citeItem):
+        if isinstance(item, CiteItem):
             return self.handleCitation(item, spider)
 
     def handleCitation(self, item, spider):
-        citation = ItemAdapter(item).asdict()['title'][0].split(".")
+        citation = ItemAdapter(item).asdict()['title'].split(".")
         rest = citation[3].split(";")
         datep = rest[0].strip()
         vol_pages= rest[-1].split(":")
         vol = vol_pages[0].strip()
         pages = vol_pages[-1].strip()
-        pmid = ItemAdapter(item).asdict()['url'][0].split("/")[-1]
+        pmid = ItemAdapter(item).asdict()['url'].split("/")[-1]
         line = f"ID:{pmid}\nAU:{citation[0]}\nTI:{citation[1].strip()}\nJO:{citation[2].strip()}\nDP:{datep}\nVL:{vol}\nPG:{pages}\n\n"
         self.file_citation.write(line)
         return item

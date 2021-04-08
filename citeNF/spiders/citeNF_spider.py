@@ -1,7 +1,7 @@
 import scrapy
 from scrapy.loader import ItemLoader
 import w3lib.html as wh
-from citeNF.items import videoItem, citeItem
+from citeNF.items import VideoItem, CiteItem
 
 class NutrittionSpider(scrapy.Spider):
     name = "cite_spider"
@@ -11,28 +11,30 @@ class NutrittionSpider(scrapy.Spider):
     def parse (self, response):
         URL = self.start_urls[0]
         VIDEO_TITLE = response.xpath('//head/title/text()').get()
+        VIDEO_URL = response.xpath('//meta[@property="og:video"]/@content').get()
         TRANSCRIPT = wh.remove_tags(response.xpath('//div[@id="collapseTranscript"]/div').get())
 
-        video = ItemLoader(item=videoItem(), response=response)
+        video = VideoItem()
 
-        video.add_value('url', URL)
-        video.add_value('title', VIDEO_TITLE)
-        video.add_xpath('video', '//meta[@property="og:video"]/@content')
-        video.add_value('transcript', TRANSCRIPT)
+        video['url'] = URL
+        video['title'] = VIDEO_TITLE
+        video['video'] = VIDEO_URL
+        video['transcript'] = TRANSCRIPT
 
 
         CITATION_SELECTOR = '//cite/a'
 
-        yield video.load_item()
+        yield video
 
         for citation in response.xpath(CITATION_SELECTOR):
-            c = ItemLoader(item=citeItem(), selector=citation)
-            c.add_xpath('title', '@title')
-            c.add_xpath('url', '@href')
-            c.add_value('video_url', URL)
-            c.add_value('video_title', VIDEO_TITLE)
+            cItem = CiteItem()
+
+            cItem['title'] = citation.xpath('@title').get()
+            cItem['url'] = citation.xpath('@href').get()
+            cItem['video_url'] = URL
+            cItem['video_title'] = VIDEO_TITLE
            
-            yield c.load_item()
+            yield cItem
 
         # next_page = response.xpath('//div[@class="previous-video"]/a/@href')
         

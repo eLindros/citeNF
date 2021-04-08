@@ -50,3 +50,27 @@ class DuplicatesPipeline:
         else:
             self.ids_seen.add(adapter['url'])
             return item
+
+class TxtWriterPipeline:
+
+    def open_spider(self, spider):
+        self.file_citation = open('citation.txt', 'w', encoding='utf-8')
+
+    def close_spider(self, spider):
+        self.file_citation.close()
+
+    def process_item(self, item, spider):
+        if isinstance(item, citeItem):
+            return self.handleCitation(item, spider)
+
+    def handleCitation(self, item, spider):
+        citation = ItemAdapter(item).asdict()['title'][0].split(".")
+        rest = citation[3].split(";")
+        datep = rest[0].strip()
+        vol_pages= rest[-1].split(":")
+        vol = vol_pages[0].strip()
+        pages = vol_pages[-1].strip()
+        pmid = ItemAdapter(item).asdict()['url'][0].split("/")[-1]
+        line = f"ID:{pmid}\nAU:{citation[0]}\nTI:{citation[1].strip()}\nJO:{citation[2].strip()}\nDP:{datep}\nVL:{vol}\nPG:{pages}\n\n"
+        self.file_citation.write(line)
+        return item

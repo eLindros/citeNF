@@ -64,8 +64,8 @@ ROBOTSTXT_OBEY = True
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
     'citeNF.pipelines.DuplicatesPipeline': 200,
-    'citeNF.pipelines.TxtWriterPipeline': 300,
-    'citeNF.pipelines.JsonWriterPipeline': 400,
+    'citeNF.pipelines.JsonWriterPipeline': 300,
+    'citeNF.pipelines.TxtWriterPipeline': 400,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

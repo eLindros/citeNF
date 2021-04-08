@@ -5,8 +5,10 @@ from citeNF.items import VideoItem, CiteItem
 
 class NutrittionSpider(scrapy.Spider):
     name = "cite_spider"
-
     start_urls = ['https://nutritionfacts.org/video/heart-stents-and-upcoding-how-cardiologists-game-the-system/']
+
+    def __init__(self):
+        self.i = 1
 
     def parse (self, response):
         URL = self.start_urls[0]
@@ -21,10 +23,10 @@ class NutrittionSpider(scrapy.Spider):
         video['video'] = VIDEO_URL
         video['transcript'] = TRANSCRIPT
 
+        yield video
+
 
         CITATION_SELECTOR = '//cite/a'
-
-        yield video
 
         for citation in response.xpath(CITATION_SELECTOR):
             cItem = CiteItem()
@@ -38,8 +40,6 @@ class NutrittionSpider(scrapy.Spider):
 
         next_page = response.xpath('//div[@class="previous-video"]/a/@href').get()
         
-        i = 0
-
-        if next_page is not None and i < 2:
-            i += i
+        if next_page is not None and self.i < 3:
+            self.i += 1
             yield response.follow(next_page, callback=self.parse)

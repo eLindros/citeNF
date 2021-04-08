@@ -64,13 +64,28 @@ class TxtWriterPipeline:
             return self.handleCitation(item, spider)
 
     def handleCitation(self, item, spider):
-        citation = ItemAdapter(item).asdict()['title'].split(".")
+        citation = item['title'].split(".")
         rest = citation[3].split(";")
         datep = rest[0].strip()
         vol_pages= rest[-1].split(":")
         vol = vol_pages[0].strip()
         pages = vol_pages[-1].strip()
-        pmid = ItemAdapter(item).asdict()['url'].split("/")[-1]
-        line = f"ID:{pmid}\nAU:{citation[0]}\nTI:{citation[1].strip()}\nJO:{citation[2].strip()}\nDP:{datep}\nVL:{vol}\nPG:{pages}\n\n"
+        url = item['url']
+        urllist = url.split("/")
+        pmcid = ""
+
+        if len(urllist[-1]) == 0:
+            pmid = urllist[-2]
+        else:
+            pmid = urllist[-1]
+        
+        if not pmid.isnumeric():
+            pmcid = pmid
+            pmid = ""
+
+        if not pmcid.startswith("PMC"):
+            pmcid = ""
+
+        line = f"ID:{pmid}\nPMCID:{pmcid}\nAU:{citation[0]}\nTI:{citation[1].strip()}\nJO:{citation[2].strip()}\nDP:{datep}\nVL:{vol}\nPG:{pages}\nURL:{url}\n\n"
         self.file_citation.write(line)
         return item

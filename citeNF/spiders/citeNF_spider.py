@@ -6,12 +6,10 @@ from citeNF.items import VideoItem, CiteItem
 class NutrittionSpider(scrapy.Spider):
     name = "cite_spider"
     start_urls = ['https://nutritionfacts.org/video/heart-stents-and-upcoding-how-cardiologists-game-the-system/']
-
-    def __init__(self):
-        self.i = 1
+    next_page = start_urls[0]
 
     def parse (self, response):
-        URL = self.start_urls[0]
+        URL = self.next_page
         VIDEO_TITLE = response.xpath('//head/title/text()').get()
         VIDEO_URL = response.xpath('//meta[@property="og:video"]/@content').get()
         TRANSCRIPT = wh.remove_tags(response.xpath('//div[@id="collapseTranscript"]/div').get())
@@ -38,8 +36,7 @@ class NutrittionSpider(scrapy.Spider):
            
             yield cItem
 
-        next_page = response.xpath('//div[@class="previous-video"]/a/@href').get()
+        self.next_page = response.xpath('//div[@class="previous-video"]/a/@href').get()
         
-        if next_page is not None and self.i < 3:
-            self.i += 1
-            yield response.follow(next_page, callback=self.parse)
+        if self.next_page is not None:
+            yield response.follow(self.next_page, callback=self.parse)

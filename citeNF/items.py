@@ -12,6 +12,7 @@ class VideoItem(scrapy.Item):
     video = scrapy.Field()
     title = scrapy.Field()
     transcript = scrapy.Field()
+    keywords = scrapy.Field()
 
 class CiteItem(scrapy.Item):
     pmid = scrapy.Field()
@@ -20,6 +21,7 @@ class CiteItem(scrapy.Item):
     url = scrapy.Field()
     video_url = scrapy.Field()
     video_title = scrapy.Field()
+    video_keywords = scrapy.Field()
     authors = scrapy.Field()
     title = scrapy.Field()
     journal = scrapy.Field()

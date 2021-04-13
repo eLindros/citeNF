@@ -48,6 +48,8 @@ class JsonWriterPipeline:
         pmcid = ""
         video_url = item['video_url']
         video_title = item['video_title']
+        video_keywords = item['video_keywords']
+        keyword_separator = ','
 
         if len(urllist[-1]) == 0:
             pmid = urllist[-2]
@@ -61,7 +63,7 @@ class JsonWriterPipeline:
         if not pmcid.startswith("PMC"):
             pmcid = ""
 
-        line_txt = f"PMID:{pmid}\nPMCID:{pmcid}\nAU:{authors}\nTI:{title}\nJO:{journal}\nDP:{datep}\nVL:{vol}\nPG:{pages}\nURL:{url}\nVURL:{video_url}\nVTIT:{video_title}\nCI:{item['citation']}\n\n"
+        line_txt = f"PMID:{pmid}\nPMCID:{pmcid}\nAU:{authors}\nTI:{title}\nJO:{journal}\nDP:{datep}\nVL:{vol}\nPG:{pages}\nURL:{url}\nVURL:{video_url}\nVTIT:{video_title}\nCI:{item['citation']}\nKW:{keyword_separator.join(video_keywords)}\n\n"
 
         item['pmid'] = pmid
         item['pmcid'] = pmcid

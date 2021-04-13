@@ -12,9 +12,11 @@ class VideoItem(scrapy.Item):
     video = scrapy.Field()
     title = scrapy.Field()
     transcript = scrapy.Field()
+    keywords = scrapy.Field()
 
 class CiteItem(scrapy.Item):
     title = scrapy.Field()
     url = scrapy.Field()
     video_url = scrapy.Field()
     video_title = scrapy.Field()
+    video_keywords = scrapy.Field()

@@ -63,7 +63,7 @@ ROBOTSTXT_OBEY = True
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'citeNF.pipelines.DuplicatesPipeline': 200,
+   # 'citeNF.pipelines.DuplicatesPipeline': 200,
     'citeNF.pipelines.JsonWriterPipeline': 300,
     'citeNF.pipelines.TxtWriterPipeline': 400,
 }

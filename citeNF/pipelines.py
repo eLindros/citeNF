@@ -10,16 +10,17 @@ from scrapy.exceptions import DropItem
 from citeNF.items import VideoItem, CiteItem
 import json
 
-
 class JsonWriterPipeline:
 
     def open_spider(self, spider):
-        self.file_video = open('videos.jsonl', 'w', encoding='utf-8')
-        self.file_citation = open('citation.jsonl', 'w', encoding='utf-8')
+        self.file_video = open('videos.jsonl', 'a', encoding='utf-8')
+        self.file_citation_jsonl = open('citation.jsonl', 'a', encoding='utf-8')
+        self.file_citation_txt = open('citation.txt', 'a', encoding='utf-8')
 
     def close_spider(self, spider):
         self.file_video.close()
-        self.file_citation.close()
+        self.file_citation_jsonl.close()
+        self.file_citation_txt.close()
 
     def process_item(self, item, spider):
         if isinstance(item, VideoItem):
@@ -33,38 +34,10 @@ class JsonWriterPipeline:
         return item
 
     def handleCitation(self, item, spider):
-        line = json.dumps(ItemAdapter(item).asdict(), ensure_ascii=False) + "\n"
-        self.file_citation.write(line)
-        return item
-
-
-class DuplicatesPipeline:
-
-    def __init__(self):
-        self.ids_seen = set()
-
-    def process_item(self, item, spider):
-        adapter = ItemAdapter(item)
-        if adapter['url'] in self.ids_seen:
-            raise DropItem(f"Duplicate item found: {item!r}")
-        else:
-            self.ids_seen.add(adapter['url'])
-            return item
-
-class TxtWriterPipeline:
-
-    def open_spider(self, spider):
-        self.file_citation = open('citation.txt', 'w', encoding='utf-8')
-
-    def close_spider(self, spider):
-        self.file_citation.close()
-
-    def process_item(self, item, spider):
-        if isinstance(item, CiteItem):
-            return self.handleCitation(item, spider)
-
-    def handleCitation(self, item, spider):
-        citation = item['title'].split(".")
+        citation = item['citation'].split(".")
+        authors = citation[0]
+        title = citation[1].strip()
+        journal = citation[2].strip()
         rest = citation[3].split(";")
         datep = rest[0].strip()
         vol_pages= rest[-1].split(":")
@@ -73,6 +46,8 @@ class TxtWriterPipeline:
         url = item['url']
         urllist = url.split("/")
         pmcid = ""
+        video_url = item['video_url']
+        video_title = item['video_title']
 
         if len(urllist[-1]) == 0:
             pmid = urllist[-2]
@@ -86,6 +61,33 @@ class TxtWriterPipeline:
         if not pmcid.startswith("PMC"):
             pmcid = ""
 
-        line = f"ID:{pmid}\nPMCID:{pmcid}\nAU:{citation[0]}\nTI:{citation[1].strip()}\nJO:{citation[2].strip()}\nDP:{datep}\nVL:{vol}\nPG:{pages}\nURL:{url}\n\n"
-        self.file_citation.write(line)
+        line_txt = f"PMID:{pmid}\nPMCID:{pmcid}\nAU:{authors}\nTI:{title}\nJO:{journal}\nDP:{datep}\nVL:{vol}\nPG:{pages}\nURL:{url}\nVURL:{video_url}\nVTIT:{video_title}\nCI:{item['citation']}\n\n"
+
+        item['pmid'] = pmid
+        item['pmcid'] = pmcid
+        item['authors'] = authors
+        item['title'] = title
+        item['journal'] = journal
+        item['date'] = datep
+        item['volume'] = vol
+        item['pages'] = pages
+
+        line_json = json.dumps(ItemAdapter(item).asdict(), ensure_ascii=False) + "\n"
+
+        self.file_citation_jsonl.write(line_json)
+        self.file_citation_txt.write(line_txt)
+
         return item
+
+class DuplicatesPipeline:
+
+    def __init__(self):
+        self.ids_seen = set()
+
+    def process_item(self, item, spider):
+        adapter = ItemAdapter(item)
+        if adapter['url'] in self.ids_seen:
+            raise DropItem(f"Duplicate item found: {item!r}")
+        else:
+            self.ids_seen.add(adapter['url'])
+            return item

@@ -65,7 +65,6 @@ ROBOTSTXT_OBEY = True
 ITEM_PIPELINES = {
     'citeNF.pipelines.DuplicatesPipeline': 200,
     'citeNF.pipelines.JsonWriterPipeline': 300,
-    'citeNF.pipelines.TxtWriterPipeline': 400,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

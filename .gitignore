@@ -1,0 +1,7 @@
+*.md
+*.txt
+Bookends Export.json
+*.bex
+NutritionFacts.json
+newbookends.*
+.DS_Store

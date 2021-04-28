@@ -5,3 +5,5 @@ Bookends Export.json
 NutritionFacts.json
 newbookends.*
 .DS_Store
+.scrapy
+flowchart*

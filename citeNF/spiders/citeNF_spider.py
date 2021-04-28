@@ -5,8 +5,8 @@ from citeNF.items import VideoItem, CiteItem
 
 class NutrittionSpider(scrapy.Spider):
     name = "cite_spider"
-    # start_urls = ['https://nutritionfacts.org/video/heart-stents-and-upcoding-how-cardiologists-game-the-system/']
-    start_urls = ['https://nutritionfacts.org/video/sodium-skeptics-try-to-shake-up-the-salt-debate/']
+    # start_urls = ['https://nutritionfacts.org/video/preventing-inflammatory-bowel-disease-with-diet/']
+    start_urls = ['https://nutritionfacts.org/video/kombuchas-side-effects-is-it-bad-for-you/']
     next_page = start_urls[0]
 
     def parse (self, response):
@@ -15,14 +15,20 @@ class NutrittionSpider(scrapy.Spider):
         VIDEO_URL = response.xpath('//meta[@property="og:video"]/@content').get()
         TRANSCRIPT = wh.remove_tags(response.xpath('//div[@id="collapseTranscript"]/div').get())
         KEYWORDS = response.xpath('//ul[@class="list-inline video-topics"]/li/a/text()').getall()
+        NEXT_VIDEO = response.xpath('//div[@class="next-video"]/a/@href').get()
+        PREV_VIDEO = response.xpath('//div[@class="previous-video"]/a/@href').get()
+        DATE = response.xpath('//time/@datetime').get()
 
         video = VideoItem()
 
         video['url'] = URL
         video['title'] = VIDEO_TITLE
         video['video'] = VIDEO_URL
-        video['transcript'] = TRANSCRIPT
+        video['transcript'] = TRANSCRIPT.replace('\t','').replace('#', '').replace('\n', '\n\n')
         video['keywords'] = KEYWORDS
+        video['next_video'] = NEXT_VIDEO
+        video['prev_video'] = PREV_VIDEO
+        video['date'] = DATE
 
         yield video
 
@@ -35,12 +41,10 @@ class NutrittionSpider(scrapy.Spider):
             cItem['citation'] = citation.xpath('@title').get()
             cItem['url'] = citation.xpath('@href').get()
             cItem['video_url'] = URL
-            cItem['video_title'] = VIDEO_TITLE
-            cItem['video_keywords'] = KEYWORDS
            
             yield cItem
 
-        self.next_page = response.xpath('//div[@class="next-video"]/a/@href').get()
+        self.next_page = NEXT_VIDEO
         
         if self.next_page is not None:
             yield response.follow(self.next_page, callback=self.parse)

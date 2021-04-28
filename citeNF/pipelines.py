@@ -12,23 +12,29 @@ import json
 
 class JsonWriterPipeline:
 
+    video_id = 0
+    citation_id = 0
+
     def open_spider(self, spider):
-        self.file_video = open('db/videos.jsonl', 'a', encoding='utf-8')
-        self.file_citation_jsonl = open('db/citation.jsonl', 'a', encoding='utf-8')
-        self.file_citation_txt = open('db/citation.txt', 'a', encoding='utf-8')
+        self.file_video = open('db/videos.jsonl', 'w', encoding='utf-8')
+        self.file_citation = open('db/citations.jsonl', 'w', encoding='utf-8')
+        self.file_video_citation = open('db/video_citation.jsonl', 'w', encoding='utf-8')
 
     def close_spider(self, spider):
         self.file_video.close()
-        self.file_citation_jsonl.close()
-        self.file_citation_txt.close()
+        self.file_citation.close()
+        self.file_video_citation.close()
 
     def process_item(self, item, spider):
         if isinstance(item, VideoItem):
+            self.video_id += 1
             return self.handleVideo(item, spider)
         if isinstance(item, CiteItem):
+            self.citation_id += 1
             return self.handleCitation(item, spider)
 
     def handleVideo(self, item, spider):
+        item['id'] = self.video_id
         line = json.dumps(ItemAdapter(item).asdict(), ensure_ascii=False) + "\n"
         self.file_video.write(line)
         return item
@@ -47,9 +53,6 @@ class JsonWriterPipeline:
         urllist = url.split("/")
         pmcid = ""
         video_url = item['video_url']
-        video_title = item['video_title']
-        video_keywords = item['video_keywords']
-        keyword_separator = ','
 
         if len(urllist[-1]) == 0:
             pmid = urllist[-2]
@@ -63,8 +66,9 @@ class JsonWriterPipeline:
         if not pmcid.startswith("PMC"):
             pmcid = ""
 
-        line_txt = f"PMID:{pmid}\nPMCID:{pmcid}\nAU:{authors}\nTI:{title}\nJO:{journal}\nDP:{datep}\nVL:{vol}\nPG:{pages}\nURL:{url}\nVURL:{video_url}\nVTIT:{video_title}\nCI:{item['citation']}\nKW:{keyword_separator.join(video_keywords)}\n\n"
+        # line_txt = f"PMID:{pmid}\nPMCID:{pmcid}\nAU:{authors}\nTI:{title}\nJO:{journal}\nDP:{datep}\nVL:{vol}\nPG:{pages}\nURL:{url}\nVURL:{video_url}\nCI:{item['citation']}\n\n"
 
+        item['id'] = self.citation_id
         item['pmid'] = pmid
         item['pmcid'] = pmcid
         item['authors'] = authors
@@ -75,9 +79,10 @@ class JsonWriterPipeline:
         item['pages'] = pages
 
         line_json = json.dumps(ItemAdapter(item).asdict(), ensure_ascii=False) + "\n"
+        line_video_citation = json.dumps({"id": self.citation_id, "video_url": video_url, "citation_url": url}, ensure_ascii=False) + "\n"
 
-        self.file_citation_jsonl.write(line_json)
-        self.file_citation_txt.write(line_txt)
+        self.file_citation.write(line_json)
+        self.file_video_citation.write(line_video_citation)
 
         return item
 
